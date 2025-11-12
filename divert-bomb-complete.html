@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Divert Bomb - Jogo + Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #FFD700, #FF6347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            font-size: 18px;
+            opacity: 0.9;
+            color: #87CEEB;
+        }
+
+        .tab-navigation {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-3px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .game-wrapper {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            color: #333;
+        }
+
+        #gameCanvas {
+            border: 4px solid #333;
+            border-radius: 15px;
+            background: #000;
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+            touch-action: none;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .mobile-controls {
+            display: flex;
+            margin-top: 20px;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .arrow-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-size: 36px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            font-weight: bold;
+        }
+
+        .arrow-btn:active {
+            transform: scale(0.9);
+        }
+
+        .high-score {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .high-score-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .ranking-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        .rank-novice { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
+        .rank-amateur { background: linear-gradient(135deg, #cd7f32, #a0522d); color: white; }
+        .rank-skilled { background: linear-gradient(135deg, #c0c0c0, #a8a8a8); color: white; }
+        .rank-expert { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #333; }
+        .rank-master { background: linear-gradient(135deg, #ff6b6b, #ee5a6f); color: white; }
+        .rank-legend { background: linear-gradient(135deg, #a8edea, #fed6e3); color: #333; animation: rainbow 3s infinite; }
+
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse { animation: pulse 2s infinite; }
+
+        .lesson {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .lesson-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .lesson-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .lesson-title {
+            font-size: 28px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .function { color: #dcdcaa; }
+        .comment { color: #6a9955; }
+        .number { color: #b5cea8; }
+
+        .ai-video-container {
+            background: #000;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 3px solid #667eea;
+        }
+
+        .ai-avatar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+
+        .avatar-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .avatar-info {
+            flex: 1;
+        }
+
+        .avatar-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .avatar-status {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .video-content {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .speaking-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4ade80;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @media (max-width: 768px) {
+            .logo { font-size: 36px; }
+            .lesson-title { font-size: 22px; }
+            .arrow-btn { width: 70px; height: 70px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <div class="logo">💣 DIVERT BOMB</div>
+            <div class="tagline">Jogue e Aprenda a Criar Seu Próprio Jogo!</div>
+        </div>
+
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('game')">🎮 JOGAR</button>
+            <button class="tab-btn" onclick="switchTab('tutorial')">📚 TUTORIAL</button>
+            <button class="tab-btn" onclick="switchTab('video')">🎬 VÍDEO IA</button>
+        </div>
+
+        <!-- ABA DO JOGO -->
+        <div id="game" class="tab-content active">
+            <div class="game-wrapper">
+                <canvas id="gameCanvas" width="400" height="400"></canvas>
+                <div class="stats-bar">
+                    <div class="stat-card">
+                        <div class="stat-value" id="scoreDisplay">0</div>
+                        <div class="stat-label">Pontos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="timeDisplay">0</div>
+                        <div class="stat-label">Tempo</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="bombsDisplay">0</div>
+                        <div class="stat-label">Bombas</div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-success pulse" id="startBtn" onclick="startGame()">▶️ JOGAR</button>
+                    <button class="btn btn-secondary" onclick="pauseGame()">⏸️ Pausar</button>
+                    <button class="btn" onclick="resetGame()">🔄 Reiniciar</button>
+                </div>
+                <div class="mobile-controls">
+                    <button class="arrow-btn" id="leftBtn">←</button>
+                    <button class="arrow-btn" id="rightBtn">→</button>
+                </div>
+                <div class="high-score">
+                    🏆 RECORDE<br>
+                    <span class="high-score-value" id="highScore">0</span>
+                    <div id="rankingBadge"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA DO TUTORIAL -->
+        <div id="tutorial" class="tab-content">
+            <div class="lesson">
+                <div class="lesson-header">
+                    <div class="lesson-number">1</div>
+                    <div class="lesson-title">Preparando o Canvas</div>
+                </div>
+                <p style="margin-bottom: 15px; font-size: 16px;">O Canvas é nossa tela de jogo onde tudo acontece! É como um papel em branco onde desenhamos.</p>
+                <div class="code-block"><span class="keyword">const</span> canvas = <span class="function">document.getElementById</span>(<span class="string">'gameCanvas'</span>);
+<span class="keyword">const</span> ctx = canvas.<span class="function">getContext</span>(<span class="string">'2d'</span>);
+
+<span class="comment">// ctx é nosso "pincel" para desenhar no canvas</span></div>
+            </div>
+
+            <div class="lesson">
+                <div class="lesson-header">
+                    <div class="lesson-number">2</div>
+                    <div class="lesson-title">Criando o Jogador</div>
+                </div>
+                <p style="margin-bottom: 15px; font-size: 16px;">Criamos um objeto com todas as propriedades do jogador: posição, tamanho e velocidade.</p>
+                <div class="code-block"><span class="keyword">let</span> player = {
+    x: <span class="number">175</span>,      <span class="comment">// Posição horizontal</span>
+    y: <span class="number">350</span>,      <span class="comment">// Posição vertical</span>
+    width: <span class="number">50</span>,   <span class="comment">// Largura</span>
+    height: <span class="number">50</span>,  <span class="comment">// Altura</span>
+    speed: <span class="number">6</span>     <span class="comment">// Velocidade de movimento</span>
+};</div>
+            </div>
+
+            <div class="lesson">
+                <div class="lesson-header">
+                    <div class="lesson-number">3</div>
+                    <div class="lesson-title">Sistema de Bombas</div>
+                </div>
+                <p style="margin-bottom: 15px; font-size: 16px;">As bombas são criadas com posições aleatórias e caem do topo da tela!</p>
+                <div class="code-block"><span class="keyword">function</span> <span class="function">createEnemy</span>() {
+    <span class="keyword">let</span> enemy = {
+        x: <span class="function">Math.random</span>() * <span class="number">350</span>, <span class="comment">// Posição X aleatória</span>
+        y: <span class="number">-30</span>,                    <span class="comment">// Começa acima da tela</span>
+        speed: <span class="number">2</span> + <span class="function">Math.random</span>() * <span class="number">2</span> <span class="comment">// Velocidade aleatória</span>
+    };
+    enemies.<span class="function">push</span>(enemy);
+}</div>
+            </div>
+
+            <div class="lesson">
+                <div class="lesson-header">
+                    <div class="lesson-number">4</div>
+                    <div class="lesson-title">Detectando Colisões</div>
+                </div>
+                <p style="margin-bottom: 15px; font-size: 16px;">Verificamos se a bomba tocou no jogador comparando suas posições.</p>
+                <div class="code-block"><span class="keyword">function</span> <span class="function">checkCollision</span>(rect1, rect2) {
+    <span class="keyword">return</span> rect1.x < rect2.x + rect2.width &&
+           rect1.x + rect1.width > rect2.x &&
+           rect1.y < rect2.y + rect2.height &&
+           rect1.y + rect1.height > rect2.y;
+}</div>
+            </div>
+        </div>
+
+        <!-- ABA DE VÍDEO IA -->
+        <div id="video" class="tab-content">
+            <div class="lesson">
+                <div class="lesson-header">
+                    <div class="lesson-number">🎬</div>
+                    <div class="lesson-title">Aprenda com IA - Tutorial em Vídeo</div>
+                </div>
+
+                <div class="ai-video-container">
+                    <div class="ai-avatar">
+                        <div class="avatar-icon">🤖</div>
+                        <div class="avatar-info">
+                            <div class="avatar-name">CodeBot IA</div>
+                            <div class="avatar-status"><span class="speaking-indicator"></span>Explicando agora...</div>
+                        </div>
+                    </div>
+                    <div class="video-content" id="aiSpeech">
+                        <p style="color: #4ade80; margin-bottom: 15px; font-size: 16px;">🎯 <strong>Olá! Sou o CodeBot, sua IA instrutora!</strong></p>
+                        <p style="font-size: 15px; line-height: 1.8;">Vou explicar como criamos o jogo Divert Bomb do zero! Clique nos módulos abaixo para aprender cada parte do desenvolvimento.</p>
+                    </div>
+                </div>
+
+                <div class="lesson" style="margin-top: 30px;">
+                    <h3 style="color: #667eea; margin-bottom: 20px; font-size: 24px;">📹 Módulos do Tutorial</h3>
+                    <div style="display: grid; gap: 15px;">
+                        <button class="btn" onclick="playVideo(1)" style="justify-content: center; text-align: center;">
+                            🎨 Módulo 1: Estrutura HTML e Canvas
+                        </button>
+                        <button class="btn" onclick="playVideo(2)" style="justify-content: center; text-align: center;">
+                            💅 Módulo 2: Estilização com CSS
+                        </button>
+                        <button class="btn" onclick="playVideo(3)" style="justify-content: center; text-align: center;">
+                            ⚡ Módulo 3: Lógica do Jogador
+                        </button>
+                        <button class="btn" onclick="playVideo(4)" style="justify-content: center; text-align: center;">
+                            💣 Módulo 4: Sistema de Bombas
+                        </button>
+                        <button class="btn" onclick="playVideo(5)" style="justify-content: center; text-align: center;">
+                            🎯 Módulo 5: Colisões e Game Over
+                        </button>
+                        <button class="btn" onclick="playVideo(6)" style="justify-content: center; text-align: center;">
+                            🏆 Módulo 6: Sistema de Pontuação
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de Abas
+        function switchTab(tabName) {
+            // Remove active de todos
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Adiciona active no selecionado
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Sistema de Vídeo IA
+        const videoScripts = {
+            1: `<p style="color: #4ade80; margin-bottom: 15px; font-size: 16px;">🎨 <strong>Módulo 1: Estrutura HTML e Canvas</strong></p>
+                <p style="font-size: 15px; line-height: 1.8;">Olá! Vamos começar criando a estrutura básica do nosso jogo.</p>
+                <p style="margin-top: 15px; font-size: 15px;">Primeiro, precisamos do elemento Canvas - é como uma tela em branco onde vamos desenhar tudo!</p>
+                <div style="background: #2d2d2d; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <code style="color: #ce9178; font-size: 14px;">&lt;canvas id="gameCanvas" width="400" height="400"&gt;&lt;/canvas&gt;</code>
+                </div>
+                <p style="font-size: 15px;">✅ O Canvas é a base de qualquer jogo HTML5. Pense nele como seu papel digital!</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ Definimos largura e altura fixas para manter o aspecto do jogo.</p>`,
+            
+            2: `<p style="color: #4ade80; margin-bottom: 15px; font-size: 16px;">💅 <strong>Módulo 2: Estilização com CSS</strong></p>
+                <p style="font-size: 15px; line-height: 1.8;">Agora vamos deixar tudo bonito com CSS!</p>
+                <p style="margin-top: 15px; font-size: 15px;">Usamos gradientes para criar um visual moderno e atraente:</p>
+                <div style="background: #2d2d2d; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <code style="color: #ce9178; font-size: 14px;">background: linear-gradient(135deg, #667eea, #764ba2);</code>
+                </div>
+                <p style="font-size: 15px;">✅ Os botões têm efeitos hover e sombras para ficarem mais interativos!</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ Tudo é responsivo para funcionar em celulares e tablets!</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ Usamos animações CSS para o efeito pulse nos botões.</p>`,
+            
+            3: `<p style="color: #4ade80; margin-bottom: 15px; font-size: 16px;">⚡ <strong>Módulo 3: Lógica do Jogador</strong></p>
+                <p style="font-size: 15px; line-height: 1.8;">Vamos criar nosso personagem e fazer ele se mover!</p>
+                <div style="background: #2d2d2d; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <code style="color: #569cd6; font-size: 14px;">let</code> <code style="color: #dcdcaa;">player</code> = {<br>
+                    &nbsp;&nbsp;x: <code style="color: #b5cea8;">175</code>,<br>
+                    &nbsp;&nbsp;y: <code style="color: #b5cea8;">350</code>,<br>
+                    &nbsp;&nbsp;speed: <code style="color: #b5cea8;">6</code><br>
+                    };
+                </div>
+                <p style="font-size: 15px;">✅ Detectamos as teclas pressionadas usando addEventListener!</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ Também funciona com touch em dispositivos móveis!</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ O jogador tem um design personalizado com cabeça, corpo e membros.</p>`,
+            
+            4: `<p style="color: #4ade80; margin-bottom: 15px; font-size: 16px;">💣 <strong>Módulo 4: Sistema de Bombas</strong></p>
+                <p style="font-size: 15px; line-height: 1.8;">As bombas são nossos inimigos! Elas caem do topo da tela.</p>
+                <div style="background: #2d2d2d; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <code style="color: #569cd6; font-size: 14px;">function</code> <code style="color: #dcdcaa;">createEnemy</code>() {<br>
+                    &nbsp;&nbsp;<code style="color: #6a9955;">// Posição X aleatória</code><br>
+                    &nbsp;&nbsp;x: Math.random() * <code style="color: #b5cea8;">350</code><br>
+                    }
+                </div>
+                <p style="font-size: 15px;">✅ Usamos Math.random() para posições aleatórias!</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ A velocidade aumenta com o tempo para mais desafio!</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ Cada bomba tem um design com pavio e faísca animada.</p>`,
+            
+            5: `<p style="color: #4ade80; margin-bottom: 15px; font-size: 16px;">🎯 <strong>Módulo 5: Colisões e Game Over</strong></p>
+                <p style="font-size: 15px; line-height: 1.8;">Precisamos detectar quando a bomba acerta o jogador!</p>
+                <div style="background: #2d2d2d; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <code style="color: #569cd6; font-size: 14px;">function</code> <code style="color: #dcdcaa;">checkCollision</code>(rect1, rect2) {<br>
+                    &nbsp;&nbsp;<code style="color: #569cd6;">return</code> rect1.x < rect2.x + rect2.width<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&& rect1.x + rect1.width > rect2.x;<br>
+                    }
+                </div>
+                <p style="font-size: 15px;">✅ Verificamos se os retângulos se sobrepõem!</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ Quando há colisão, mostramos uma explosão animada! 💥</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ A explosão tem múltiplas camadas de cores e partículas.</p>`,
+            
+            6: `<p style="color: #4ade80; margin-bottom: 15px; font-size: 16px;">🏆 <strong>Módulo 6: Sistema de Pontuação</strong></p>
+                <p style="font-size: 15px; line-height: 1.8;">Finalmente, vamos adicionar pontuação e rankings!</p>
+                <p style="margin-top: 15px; font-size: 15px;">Temos 6 níveis de classificação:</p>
+                <ul style="margin: 15px 0 15px 20px; line-height: 2;">
+                    <li style="font-size: 15px;">🥉 Novato (0-99 pontos)</li>
+                    <li style="font-size: 15px;">🥉 Amador (100-299 pontos)</li>
+                    <li style="font-size: 15px;">🥈 Habilidoso (300-599 pontos)</li>
+                    <li style="font-size: 15px;">🥇 Especialista (600-999 pontos)</li>
+                    <li style="font-size: 15px;">🏅 Mestre (1000-1499 pontos)</li>
+                    <li style="font-size: 15px;">👑 Lenda (1500+) com efeito arco-íris!</li>
+                </ul>
+                <p style="font-size: 15px;">✅ Cada bomba desviada vale 10 pontos!</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ O recorde é salvo e mostrado com badge colorido!</p>
+                <p style="margin-top: 10px; font-size: 15px;">✅ O ranking "Lenda" tem uma animação especial de cores!</p>`
+        };
+
+        function playVideo(module) {
+            const speech = document.getElementById('aiSpeech');
+            speech.innerHTML = videoScripts[module];
+            speech.style.animation = 'none';
+            setTimeout(() => {
+                speech.style.animation = 'fadeIn 0.5s';
+            }, 10);
+        }
+
+        // CÓDIGO DO JOGO
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const maxWidth = Math.min(400, container.clientWidth - 40);
+            canvas.width = maxWidth;
+            canvas.height = maxWidth;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let player = { x: 175, y: 350, width: 50, height: 50, speed: 6 };
+        let enemies = [];
+        let score = 0;
+        let gameTime = 0;
+        let highScore = 0;
+        let gameOver = false;
+        let gamePaused = false;
+        let gameStarted = false;
+        let keys = {};
+        let enemyInterval, animationId, timeInterval;
+        let explosionFrame = 0, explosionX = 0, explosionY = 0;
+
+        document.getElementById('highScore').textContent = highScore;
+        updateRankingBadge();
+
+        function updateRankingBadge() {
+            const badge = document.getElementById('rankingBadge');
+            if (highScore === 0) { badge.innerHTML = ''; return; }
+            
+            let rankText = '', rankClass = '';
+            if (highScore < 100) { rankText = '🥉 Novato'; rankClass = 'rank-novice'; }
+            else if (highScore < 300) { rankText = '🥉 Amador'; rankClass = 'rank-amateur'; }
+            else if (highScore < 600) { rankText = '🥈 Habilidoso'; rankClass = 'rank-skilled'; }
+            else if (highScore < 1000) { rankText = '🥇 Especialista'; rankClass = 'rank-expert'; }
+            else if (highScore < 1500) { rankText = '🏅 Mestre'; rankClass = 'rank-master'; }
+            else { rankText = '👑 Lenda'; rankClass = 'rank-legend'; }
+            
+            badge.innerHTML = `<div class="ranking-badge ${rankClass}">${rankText}</div>`;
+        }
+
+        document.addEventListener('keydown', function(e) {
+            keys[e.key] = true;
+            if (e.key === ' ' && !gameStarted) startGame();
+        });
+
+        document.addEventListener('keyup', function(e) {
+            keys[e.key] = false;
+        });
+
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+
+        leftBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            keys['ArrowLeft'] = true;
+        });
+        leftBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            keys['ArrowLeft'] = false;
+        });
+        rightBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            keys['ArrowRight'] = true;
+        });
+        rightBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            keys['ArrowRight'] = false;
+        });
+        leftBtn.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
+        leftBtn.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
+        rightBtn.addEventListener('mousedown', () => keys['ArrowRight'] = true);
+        rightBtn.addEventListener('mouseup', () => keys['ArrowRight'] = false);
+
+        function createEnemy() {
+            if (!gameStarted || gamePaused || gameOver) return;
+            const canvasWidth = canvas.width;
+            const enemySize = canvasWidth * 0.075;
+            enemies.push({
+                x: Math.random() * (canvasWidth - enemySize),
+                y: -enemySize,
+                width: enemySize,
+                height: enemySize,
+                speed: (canvasWidth / 200) + Math.random() * (canvasWidth / 133) + (gameTime / 100)
+            });
+        }
+
+        function drawPlayer() {
+            const x = player.x, y = player.y, w = player.width, h = player.height;
+            ctx.fillStyle = '#ffdbac';
+            ctx.beginPath();
+            ctx.arc(x + w/2, y + h*0.2, w*0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(x + w*0.25, y + h*0.35, w*0.5, h*0.4);
+            ctx.fillStyle = '#00dd00';
+            ctx.fillRect(x + w*0.1, y + h*0.4, w*0.15, h*0.3);
+            ctx.fillRect(x + w*0.75, y + h*0.4, w*0.15, h*0.3);
+            ctx.fillStyle = '#0066ff';
+            ctx.fillRect(x + w*0.3, y + h*0.75, w*0.15, h*0.25);
+            ctx.fillRect(x + w*0.55, y + h*0.75, w*0.15, h*0.25);
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(x + w*0.4, y + h*0.18, w*0.05, 0, Math.PI * 2);
+            ctx.arc(x + w*0.6, y + h*0.18, w*0.05, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x + w/2, y + h*0.22, w*0.15, 0, Math.PI);
+            ctx.stroke();
+        }
+
+        function drawEnemies() {
+            for (let enemy of enemies) {
+                const x = enemy.x, y = enemy.y, w = enemy.width, h = enemy.height;
+                ctx.fillStyle = '#1a1a1a';
+                ctx.beginPath();
+                ctx.arc(x + w/2, y + h*0.6, w*0.45, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#444';
+                ctx.beginPath();
+                ctx.arc(x + w*0.35, y + h*0.5, w*0.15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#8b4513';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x + w/2, y + h*0.15);
+                ctx.lineTo(x + w*0.6, y);
+                ctx.stroke();
+                ctx.fillStyle = '#ff4500';
+                ctx.beginPath();
+                ctx.arc(x + w*0.6, y, w*0.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffff00';
+                ctx.beginPath();
+                ctx.arc(x + w*0.6, y, w*0.1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function movePlayer() {
+            const canvasWidth = canvas.width;
+            const maxX = canvasWidth - player.width;
+            if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+            if (keys['ArrowRight'] && player.x < maxX) player.x += player.speed;
+        }
+
+        function updateEnemies() {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                enemies[i].y += enemies[i].speed;
+                if (enemies[i].y > canvas.height) {
+                    enemies.splice(i, 1);
+                    score += 10;
+                    document.getElementById('scoreDisplay').textContent = score;
+                }
+            }
+            document.getElementById('bombsDisplay').textContent = enemies.length;
+        }
+
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+
+        function checkGameOver() {
+            for (let enemy of enemies) {
+                if (checkCollision(player, enemy)) {
+                    gameOver = true;
+                    gameStarted = false;
+                    clearInterval(enemyInterval);
+                    clearInterval(timeInterval);
+                    explosionX = player.x + player.width / 2;
+                    explosionY = player.y + player.height / 2;
+                    explosionFrame = 0;
+                    if (score > highScore) {
+                        highScore = score;
+                        document.getElementById('highScore').textContent = highScore;
+                        updateRankingBadge();
+                    }
+                    animateExplosion();
+                }
+            }
+        }
+
+        function animateExplosion() {
+            const w = canvas.width, h = canvas.height;
+            if (explosionFrame < 30) {
+                drawBackground(w, h);
+                drawEnemies();
+                const radius = (explosionFrame / 30) * player.width * 2;
+                const alpha = 1 - (explosionFrame / 30);
+                ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(explosionX, explosionY, radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = `rgba(255, 200, 0, ${alpha * 1.2})`;
+                ctx.beginPath();
+                ctx.arc(explosionX, explosionY, radius * 0.7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 1.5})`;
+                ctx.beginPath();
+                ctx.arc(explosionX, explosionY, radius * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                for (let i = 0; i < 12; i++) {
+                    const angle = (Math.PI * 2 / 12) * i;
+                    const dist = radius * 1.2;
+                    const px = explosionX + Math.cos(angle) * dist;
+                    const py = explosionY + Math.sin(angle) * dist;
+                    ctx.fillStyle = `rgba(255, ${150 - explosionFrame * 3}, 0, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, radius * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                explosionFrame++;
+                requestAnimationFrame(animateExplosion);
+            } else {
+                drawBackground(w, h);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold ' + (w / 10) + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('💥 BOOM! 💥', w / 2, h / 3);
+                ctx.font = 'bold ' + (w / 13.33) + 'px Arial';
+                ctx.fillText('GAME OVER', w / 2, h / 2.2);
+                ctx.font = (w / 16.67) + 'px Arial';
+                ctx.fillText('Pontuação: ' + score, w / 2, h / 1.8);
+                if (score >= highScore) {
+                    ctx.fillStyle = '#FFD700';
+                    ctx.font = 'bold ' + (w / 20) + 'px Arial';
+                    ctx.fillText('🏆 NOVO RECORDE! 🏆', w / 2, h / 1.5);
+                }
+                ctx.fillStyle = '#fff';
+                ctx.font = (w / 22.22) + 'px Arial';
+                ctx.fillText('Clique em Reiniciar', w / 2, h / 1.3);
+            }
+        }
+
+        function drawBackground(w, h) {
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, h * 0.6);
+            skyGradient.addColorStop(0, '#87CEEB');
+            skyGradient.addColorStop(1, '#B0E0E6');
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(w * 0.15, h * 0.15, w * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+            ctx.beginPath();
+            ctx.arc(w * 0.15, h * 0.15, w * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            drawCloud(w * 0.7, h * 0.12, w * 0.08);
+            drawCloud(w * 0.85, h * 0.2, w * 0.06);
+            drawCloud(w * 0.5, h * 0.18, w * 0.07);
+            const grassGradient = ctx.createLinearGradient(0, h * 0.5, 0, h);
+            grassGradient.addColorStop(0, '#7CFC00');
+            grassGradient.addColorStop(0.5, '#32CD32');
+            grassGradient.addColorStop(1, '#228B22');
+            ctx.fillStyle = grassGradient;
+            ctx.fillRect(0, h * 0.5, w, h * 0.5);
+        }
+
+        function drawCloud(x, y, size) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.7, y - size * 0.2, size * 0.8, 0, Math.PI * 2);
+            ctx.arc(x + size * 1.3, y, size * 0.7, 0, Math.PI * 2);
+            ctx.arc(x - size * 0.5, y, size * 0.6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function gameLoop() {
+            if (!gameStarted || gamePaused || gameOver) return;
+            drawBackground(canvas.width, canvas.height);
+            movePlayer();
+            updateEnemies();
+            checkGameOver();
+            drawPlayer();
+            drawEnemies();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            if (gameStarted && !gamePaused) return;
+            if (gameOver) { resetGame(); return; }
+            gameStarted = true;
+            gamePaused = false;
+            document.getElementById('startBtn').classList.remove('pulse');
+            if (!enemyInterval) enemyInterval = setInterval(createEnemy, 800);
+            if (!timeInterval) {
+                timeInterval = setInterval(() => {
+                    if (gameStarted && !gamePaused && !gameOver) {
+                        gameTime++;
+                        document.getElementById('timeDisplay').textContent = gameTime;
+                    }
+                }, 1000);
+            }
+            gameLoop();
+        }
+
+        function pauseGame() {
+            gamePaused = !gamePaused;
+            if (!gamePaused) gameLoop();
+        }
+
+        function resetGame() {
+            gameOver = false;
+            gameStarted = false;
+            gamePaused = false;
+            score = 0;
+            gameTime = 0;
+            enemies = [];
+            const w = canvas.width, h = canvas.height;
+            player.width = w * 0.125;
+            player.height = w * 0.125;
+            player.x = (w - player.width) / 2;
+            player.y = h - player.height - 20;
+            player.speed = w / 66.67;
+            clearInterval(enemyInterval);
+            clearInterval(timeInterval);
+            enemyInterval = null;
+            timeInterval = null;
+            document.getElementById('scoreDisplay').textContent = '0';
+            document.getElementById('timeDisplay').textContent = '0';
+            document.getElementById('bombsDisplay').textContent = '0';
+            document.getElementById('startBtn').classList.add('pulse');
+            drawBackground(w, h);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold ' + (w / 13.33) + 'px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('💣 DIVERT BOMB 💣', w / 2, h / 2.5);
+            ctx.font = 'bold ' + (w / 16.67) + 'px Arial';
+            ctx.fillText('Pronto para Jogar!', w / 2, h / 1.9);
+            ctx.font = (w / 22.22) + 'px Arial';
+            ctx.fillText('Clique em JOGAR', w / 2, h / 1.6);
+            drawPlayer();
+        }
+
+        resetGame();
+    </script>
+</body>
+</html>
